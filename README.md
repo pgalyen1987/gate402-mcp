@@ -9,6 +9,14 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 | `gate402_minify` | Compress text to cut downstream LLM token spend (~40%) | $0.005 / 10k tok |
 | `gate402_dedup` | Semantic vector-cache lookup (exact + cosine) | $0.001 hit / $0.003 miss |
 
+…plus three **free** (no payment, no key) pure-compute tools:
+
+| Tool | What it does |
+|---|---|
+| `gate402_token_count` | Estimate the token count of a string (budget your context window) |
+| `gate402_html_to_md` | Convert an HTML string you already have into clean Markdown |
+| `gate402_json_repair` | Coerce malformed / LLM-mangled JSON into valid JSON |
+
 ## How billing works
 
 On first use the server self-claims a **free-credit API key** from Gate402 and caches it at `~/.gate402-mcp/key.json`. Calls draw down that credit. When it runs out, tools return a top-up link instead of failing. To skip the free tier, set `GATE402_API_KEY` to a funded account ([top up](https://gate402.app/ops/billing/checkout)).

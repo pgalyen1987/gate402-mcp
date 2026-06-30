@@ -79,14 +79,19 @@ interface CallResult {
   text: string;
 }
 
-/** POST a Gate402 product route with the X-API-Key rail; map 402/4xx to friendly text. */
-async function callRoute(route: string, body: unknown): Promise<CallResult> {
-  const apiKey = await getApiKey();
+/**
+ * POST a Gate402 route. Paid routes attach the X-API-Key rail (claiming a free
+ * key on first use) and map 402 to a friendly top-up message. Free routes are
+ * unmetered pure-compute tools — no key, no payment path.
+ */
+async function callRoute(route: string, body: unknown, free = false): Promise<CallResult> {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (!free) headers['X-API-Key'] = await getApiKey();
   let res: Response;
   try {
     res = await fetch(`${BASE_URL}${route}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'X-API-Key': apiKey },
+      headers,
       body: JSON.stringify(body)
     });
   } catch (err) {
@@ -175,8 +180,41 @@ const TOOLS: Tool[] = [
       },
       required: ['query']
     }
+  },
+  {
+    name: 'gate402_token_count',
+    description:
+      'FREE. Estimate the token count of a string (cl100k/o200k tokenizer). Use to budget context windows. No payment required.',
+    inputSchema: {
+      type: 'object',
+      properties: { text: { type: 'string', description: 'Text to count tokens for.' } },
+      required: ['text']
+    }
+  },
+  {
+    name: 'gate402_html_to_md',
+    description:
+      'FREE. Convert an HTML string you already have into clean Markdown. (To FETCH a live page instead, use gate402_scrape.) No payment required.',
+    inputSchema: {
+      type: 'object',
+      properties: { html: { type: 'string', description: 'HTML to convert to Markdown.' } },
+      required: ['html']
+    }
+  },
+  {
+    name: 'gate402_json_repair',
+    description:
+      'FREE. Coerce malformed / LLM-mangled JSON (trailing commas, single quotes, unquoted keys) into valid JSON. No payment required.',
+    inputSchema: {
+      type: 'object',
+      properties: { text: { type: 'string', description: 'Broken JSON string to repair.' } },
+      required: ['text']
+    }
   }
 ];
+
+/** Free routes need no API key / payment path. */
+const FREE_TOOLS = new Set(['gate402_token_count', 'gate402_html_to_md', 'gate402_json_repair']);
 
 function bodyForTool(name: string, args: Record<string, unknown>): { route: string; body: unknown } {
   switch (name) {
@@ -191,6 +229,12 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
         route: '/v1/dedup',
         body: { query: args.query, vector: args.vector, namespace: args.namespace, storeOnMiss: args.storeOnMiss }
       };
+    case 'gate402_token_count':
+      return { route: '/v1/token-count', body: { text: args.text } };
+    case 'gate402_html_to_md':
+      return { route: '/v1/html-to-md', body: { html: args.html } };
+    case 'gate402_json_repair':
+      return { route: '/v1/json-repair', body: { text: args.text } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -207,7 +251,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params;
   try {
     const { route, body } = bodyForTool(name, args as Record<string, unknown>);
-    const result = await callRoute(route, body);
+    const result = await callRoute(route, body, FREE_TOOLS.has(name));
     return { content: [{ type: 'text', text: result.text }], isError: !result.ok };
   } catch (err) {
     return { content: [{ type: 'text', text: err instanceof Error ? err.message : String(err) }], isError: true };
