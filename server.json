@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.pgalyen1987/gate402-mcp",
-  "description": "Pay-per-call agent APIs over x402: web→Markdown scraping, stealth fetch, token compression, and semantic cache. Free tier, no signup.",
+  "description": "Pay-per-call agent APIs over x402: web scraping, token compression, and semantic cache.",
   "repository": {
     "url": "https://github.com/pgalyen1987/gate402-mcp",
     "source": "github"
