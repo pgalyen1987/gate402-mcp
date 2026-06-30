@@ -1,29 +1,31 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.pgalyen1987/gate402-mcp",
   "description": "Pay-per-call agent APIs over x402: web→Markdown scraping, stealth fetch, token compression, and semantic cache. Free tier, no signup.",
   "repository": {
     "url": "https://github.com/pgalyen1987/gate402-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
-      "registry_type": "npm",
+      "registryType": "npm",
       "identifier": "gate402-mcp",
-      "version": "0.1.0",
-      "transport": { "type": "stdio" },
-      "environment_variables": [
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
         {
           "name": "GATE402_API_KEY",
           "description": "Optional. A funded Gate402 account key to skip the free tier.",
-          "is_required": false,
-          "is_secret": true
+          "isRequired": false,
+          "isSecret": true
         },
         {
           "name": "GATE402_BASE_URL",
           "description": "Optional. Override the gateway base URL (default https://gate402.app).",
-          "is_required": false
+          "isRequired": false
         }
       ]
     }
