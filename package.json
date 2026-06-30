@@ -1,6 +1,6 @@
 {
   "name": "gate402-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "mcpName": "io.github.pgalyen1987/gate402-mcp",
   "description": "MCP server for Gate402 — pay-per-call agent APIs (web→Markdown scraping, token compression, semantic cache) over x402. Free tier, no signup.",
   "license": "MIT",
@@ -19,10 +19,14 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0"
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "gpt-tokenizer": "^2.9.0",
+    "jsonrepair": "^3.13.0",
+    "turndown": "^7.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
+    "@types/turndown": "^5.0.5",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

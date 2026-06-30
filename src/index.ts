@@ -23,6 +23,9 @@ import {
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { encode } from 'gpt-tokenizer';
+import TurndownService from 'turndown';
+import { jsonrepair } from 'jsonrepair';
 
 const BASE_URL = (process.env.GATE402_BASE_URL || 'https://gate402.app').replace(/\/+$/, '');
 const CONFIG_DIR = process.env.GATE402_CONFIG_DIR || join(homedir(), '.gate402-mcp');
@@ -80,13 +83,12 @@ interface CallResult {
 }
 
 /**
- * POST a Gate402 route. Paid routes attach the X-API-Key rail (claiming a free
- * key on first use) and map 402 to a friendly top-up message. Free routes are
- * unmetered pure-compute tools — no key, no payment path.
+ * POST a paid Gate402 route with the X-API-Key rail (claiming a free key on
+ * first use); map 402 to a friendly top-up message. (Free tools never reach
+ * here — they run locally in localFreeTool.)
  */
-async function callRoute(route: string, body: unknown, free = false): Promise<CallResult> {
-  const headers: Record<string, string> = { 'content-type': 'application/json' };
-  if (!free) headers['X-API-Key'] = await getApiKey();
+async function callRoute(route: string, body: unknown): Promise<CallResult> {
+  const headers: Record<string, string> = { 'content-type': 'application/json', 'X-API-Key': await getApiKey() };
   let res: Response;
   try {
     res = await fetch(`${BASE_URL}${route}`, {
@@ -213,8 +215,64 @@ const TOOLS: Tool[] = [
   }
 ];
 
-/** Free routes need no API key / payment path. */
+/**
+ * Free tools run LOCALLY inside this process — pure compute, no network, no key,
+ * no public endpoint to abuse. They make the server more useful to install; the
+ * paid tools (which do call the gateway) ride along.
+ */
 const FREE_TOOLS = new Set(['gate402_token_count', 'gate402_html_to_md', 'gate402_json_repair']);
+
+const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+
+function localFreeTool(name: string, args: Record<string, unknown>): CallResult {
+  switch (name) {
+    case 'gate402_token_count': {
+      const text = typeof args.text === 'string' ? args.text : '';
+      if (!text) return { ok: false, text: 'Provide { "text": "..." }' };
+      let tokens: number;
+      try {
+        tokens = encode(text).length;
+      } catch {
+        tokens = Math.ceil(text.length / 4);
+      }
+      return {
+        ok: true,
+        text: JSON.stringify({
+          tokens,
+          chars: text.length,
+          note: 'Estimate (cl100k/o200k). Cut these tokens ~40% with the paid gate402_minify tool.'
+        })
+      };
+    }
+    case 'gate402_html_to_md': {
+      const html = typeof args.html === 'string' ? args.html : '';
+      if (!html) return { ok: false, text: 'Provide { "html": "<...>" }' };
+      try {
+        return {
+          ok: true,
+          text: JSON.stringify({
+            markdown: turndown.turndown(html),
+            note: "Converts HTML you already have. To FETCH a live page (JS render / anti-bot), use the paid gate402_scrape tool."
+          })
+        };
+      } catch (err) {
+        return { ok: false, text: `Could not convert HTML: ${err instanceof Error ? err.message : String(err)}` };
+      }
+    }
+    case 'gate402_json_repair': {
+      const text = typeof args.text === 'string' ? args.text : '';
+      if (!text) return { ok: false, text: 'Provide { "text": "<broken json>" }' };
+      try {
+        const repaired = jsonrepair(text);
+        return { ok: true, text: JSON.stringify({ repaired: JSON.parse(repaired), repairedString: repaired }) };
+      } catch (err) {
+        return { ok: false, text: `Unrepairable JSON: ${err instanceof Error ? err.message : String(err)}` };
+      }
+    }
+    default:
+      return { ok: false, text: `Unknown free tool: ${name}` };
+  }
+}
 
 function bodyForTool(name: string, args: Record<string, unknown>): { route: string; body: unknown } {
   switch (name) {
@@ -229,12 +287,6 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
         route: '/v1/dedup',
         body: { query: args.query, vector: args.vector, namespace: args.namespace, storeOnMiss: args.storeOnMiss }
       };
-    case 'gate402_token_count':
-      return { route: '/v1/token-count', body: { text: args.text } };
-    case 'gate402_html_to_md':
-      return { route: '/v1/html-to-md', body: { html: args.html } };
-    case 'gate402_json_repair':
-      return { route: '/v1/json-repair', body: { text: args.text } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -250,8 +302,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params;
   try {
-    const { route, body } = bodyForTool(name, args as Record<string, unknown>);
-    const result = await callRoute(route, body, FREE_TOOLS.has(name));
+    const result = FREE_TOOLS.has(name)
+      ? localFreeTool(name, args as Record<string, unknown>)
+      : await (async () => {
+          const { route, body } = bodyForTool(name, args as Record<string, unknown>);
+          return callRoute(route, body);
+        })();
     return { content: [{ type: 'text', text: result.text }], isError: !result.ok };
   } catch (err) {
     return { content: [{ type: 'text', text: err instanceof Error ? err.message : String(err) }], isError: true };
