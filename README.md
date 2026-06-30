@@ -8,6 +8,7 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 | `gate402_scrape_stealth` | Hardened headless fetch for JS-heavy / bot-protected pages | $0.05 |
 | `gate402_minify` | Compress text to cut downstream LLM token spend (~40%) | $0.005 / 10k tok |
 | `gate402_dedup` | Semantic vector-cache lookup (exact + cosine) | $0.001 hit / $0.003 miss |
+| `gate402_onchain` | On-chain wallet/token intel on Base (balances, EOA/contract, tx count, token metadata) | $0.01 |
 
 …plus three **free** tools that run **locally in this process** (pure compute — no payment, no key, no network):
 

@@ -184,6 +184,19 @@ const TOOLS: Tool[] = [
     }
   },
   {
+    name: 'gate402_onchain',
+    description:
+      'On-chain wallet & token intelligence on Base: native ETH + ERC-20 balances, EOA/contract detection, tx count, and token metadata. Pay-per-call ($0.01).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: { type: 'string', description: 'Base address — a wallet or an ERC-20 token contract (0x-hex).' },
+        tokens: { type: 'array', items: { type: 'string' }, description: 'Optional extra ERC-20 contract addresses to check balances for.' }
+      },
+      required: ['address']
+    }
+  },
+  {
     name: 'gate402_token_count',
     description:
       'FREE. Estimate the token count of a string (cl100k/o200k tokenizer). Use to budget context windows. No payment required.',
@@ -287,6 +300,8 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
         route: '/v1/dedup',
         body: { query: args.query, vector: args.vector, namespace: args.namespace, storeOnMiss: args.storeOnMiss }
       };
+    case 'gate402_onchain':
+      return { route: '/v1/onchain', body: { address: args.address, tokens: args.tokens } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

@@ -1,6 +1,6 @@
 {
   "name": "gate402-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "mcpName": "io.github.pgalyen1987/gate402-mcp",
   "description": "MCP server for Gate402 — pay-per-call agent APIs (web→Markdown scraping, token compression, semantic cache) over x402. Free tier, no signup.",
   "license": "MIT",
