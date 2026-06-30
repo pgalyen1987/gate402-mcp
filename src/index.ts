@@ -197,6 +197,43 @@ const TOOLS: Tool[] = [
     }
   },
   {
+    name: 'gate402_dex',
+    description:
+      'Live DEX price, liquidity, and 24h volume for a Base token across its trading pairs. Pay-per-call ($0.01).',
+    inputSchema: {
+      type: 'object',
+      properties: { address: { type: 'string', description: 'Base ERC-20 token contract address (0x-hex).' } },
+      required: ['address']
+    }
+  },
+  {
+    name: 'gate402_news',
+    description:
+      'Recent news headlines + heuristic bull/bear sentiment for a ticker, company, or topic. Pay-per-call ($0.02).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Ticker, company, or topic (e.g. "NVDA", "ethereum ETF").' },
+        limit: { type: 'number', description: 'Max headlines (1–25, default 10).' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'gate402_edgar',
+    description:
+      'Latest SEC EDGAR filings (10-K/10-Q/8-K) for a US ticker or CIK, with direct document links. Pay-per-call ($0.02).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticker: { type: 'string', description: 'US stock ticker, e.g. AAPL (ticker or cik required).' },
+        cik: { type: 'string', description: 'SEC CIK number (alternative to ticker).' },
+        form: { type: 'string', description: 'Optional filing-type filter, e.g. "10-K", "8-K".' },
+        limit: { type: 'number', description: 'Max filings (1–40, default 10).' }
+      }
+    }
+  },
+  {
     name: 'gate402_token_count',
     description:
       'FREE. Estimate the token count of a string (cl100k/o200k tokenizer). Use to budget context windows. No payment required.',
@@ -302,6 +339,12 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
       };
     case 'gate402_onchain':
       return { route: '/v1/onchain', body: { address: args.address, tokens: args.tokens } };
+    case 'gate402_dex':
+      return { route: '/v1/dex', body: { address: args.address } };
+    case 'gate402_news':
+      return { route: '/v1/news', body: { query: args.query, limit: args.limit } };
+    case 'gate402_edgar':
+      return { route: '/v1/edgar', body: { ticker: args.ticker, cik: args.cik, form: args.form, limit: args.limit } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

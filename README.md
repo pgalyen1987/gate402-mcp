@@ -9,6 +9,9 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 | `gate402_minify` | Compress text to cut downstream LLM token spend (~40%) | $0.005 / 10k tok |
 | `gate402_dedup` | Semantic vector-cache lookup (exact + cosine) | $0.001 hit / $0.003 miss |
 | `gate402_onchain` | On-chain wallet/token intel on Base (balances, EOA/contract, tx count, token metadata) | $0.01 |
+| `gate402_dex` | Live DEX price / liquidity / 24h volume for a Base token | $0.01 |
+| `gate402_news` | Recent news headlines + bull/bear sentiment for a ticker/topic | $0.02 |
+| `gate402_edgar` | Latest SEC EDGAR filings (10-K/10-Q/8-K) for a US ticker | $0.02 |
 
 …plus three **free** tools that run **locally in this process** (pure compute — no payment, no key, no network):
 
