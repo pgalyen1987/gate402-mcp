@@ -1,0 +1,28 @@
+{
+  "name": "gate402-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Gate402 — pay-per-call agent APIs (web→Markdown scraping, token compression, semantic cache) over x402. Free tier, no signup.",
+  "license": "MIT",
+  "author": "Gate402",
+  "homepage": "https://gate402.app",
+  "repository": { "type": "git", "url": "https://github.com/pgalyen1987/gate402-mcp" },
+  "keywords": ["mcp", "modelcontextprotocol", "x402", "agent", "scraping", "markdown", "web", "claude", "cursor"],
+  "type": "module",
+  "bin": { "gate402-mcp": "dist/index.js" },
+  "files": ["dist", "README.md"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
