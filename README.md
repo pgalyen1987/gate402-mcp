@@ -56,6 +56,34 @@ Add to your MCP config (`claude_desktop_config.json`, or `claude mcp add`):
 
 Same shape — point the MCP server `command` at `npx -y gate402-mcp`.
 
+### Agent frameworks (LangChain, CrewAI, LlamaIndex)
+
+gate402 is a standard stdio MCP server, so any framework with an MCP adapter can load all 11 tools:
+
+**LangChain / LangGraph** (`langchain-mcp-adapters`):
+```python
+from langchain_mcp_adapters.client import MultiServerMCPClient
+client = MultiServerMCPClient({"gate402": {"command": "npx", "args": ["-y", "gate402-mcp"], "transport": "stdio"}})
+tools = await client.get_tools()   # feed into your agent
+```
+
+**CrewAI** (`MCPServerAdapter`):
+```python
+from crewai_tools import MCPServerAdapter
+from mcp import StdioServerParameters
+params = StdioServerParameters(command="npx", args=["-y", "gate402-mcp"])
+with MCPServerAdapter(params) as tools:
+    ...  # pass tools to your Crew
+```
+
+**LlamaIndex** (`McpToolSpec`):
+```python
+from llama_index.tools.mcp import BasicMCPClient, McpToolSpec
+tools = McpToolSpec(client=BasicMCPClient("npx", args=["-y", "gate402-mcp"])).to_tool_list()
+```
+
+Once wired, the agent calls the tools autonomously; the free-credit key is claimed on first use, and paid tools draw down from it.
+
 ## Environment variables
 
 | Var | Default | Purpose |

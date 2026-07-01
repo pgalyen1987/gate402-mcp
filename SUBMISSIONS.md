@@ -38,6 +38,14 @@ Add the same one-liner to the community servers table in the canonical servers r
 - [ ] Glama.ai and mcp.so directories (auto-crawl GitHub topic `mcp`; add the `mcp` + `model-context-protocol` topics to the repo to get picked up).
 - [ ] Smithery.ai listing (hosts a config UI; good install funnel).
 
+## 4b. Agent-framework tool hubs (lever 4 — bots use it without a human per call)
+Frameworks load gate402 via their MCP adapters (usage in README). To get *discovered* there:
+- [ ] **LangChain**: submit to the awesome-langchain / community tools list; mention `langchain-mcp-adapters` usage.
+- [ ] **CrewAI**: add to the CrewAI tools/community list (MCPServerAdapter usage).
+- [ ] **LlamaIndex**: LlamaHub tool listing (McpToolSpec usage).
+- [ ] **mcp.so / Glama / Smithery**: already auto-crawled via GH topics; confirm listing shows all 11 tools.
+> Value: a dev wires it once, then every agent on that framework calls the tools autonomously — no human in the loop per call.
+
 ## 5. Cross-link with existing distribution
 - [ ] Add the MCP server to the awesome-x402 PR (#660) description / Gate402 entry — x402 buyers will want the MCP path too.
 - [ ] Link it from gate402.app landing page (done) and from each upstream repo README (NodeProxy / TokenSqueezer / VectorCache).
