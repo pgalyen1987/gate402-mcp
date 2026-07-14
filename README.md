@@ -2,7 +2,7 @@
 
 [![x402 trust](https://x402.fuchss.app/badge.svg?resource=https%3A%2F%2Fgate402.app%2Fv1%2Fproxy)](https://x402.fuchss.app/provider/gate402.app)
 
-MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client four tools with **no signup and a free tier on first runs**:
+MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client a full toolkit with **no signup and a free tier on first runs** — including a complete Base trading loop (discover → vet → read → execute):
 
 | Tool | What it does | Price |
 |---|---|---|
