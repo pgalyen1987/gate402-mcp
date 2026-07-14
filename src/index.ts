@@ -234,6 +234,51 @@ const TOOLS: Tool[] = [
     }
   },
   {
+    name: 'gate402_token_risk',
+    description:
+      'Rug/tradeability risk VERDICT for a Base token: a 0-100 score and SAFE/CAUTION/AVOID from liquidity depth, a live honeypot/sell-tax sim, holder concentration, DEX diversity, and pool age. The pre-trade safety check. Pay-per-call ($0.03).',
+    inputSchema: {
+      type: 'object',
+      properties: { address: { type: 'string', description: 'Base ERC-20 token contract address (0x-hex).' } },
+      required: ['address']
+    }
+  },
+  {
+    name: 'gate402_momentum',
+    description:
+      'Factual momentum + order-flow signal for a Base token: price trend (5m-24h), buy/sell pressure, volume trend, classified RISING/FALLING/FLAT + ACCUMULATION/DISTRIBUTION and honeypot-gated. The read, not a prediction. Pay-per-call ($0.02).',
+    inputSchema: {
+      type: 'object',
+      properties: { address: { type: 'string', description: 'Base ERC-20 token contract address (0x-hex).' } },
+      required: ['address']
+    }
+  },
+  {
+    name: 'gate402_best_swap',
+    description:
+      'Best-execution intel for a Base token: which DEX pool to trade on and the estimated price impact + total cost for a given trade size, ranked across pools with a split suggestion. Pay-per-call ($0.02).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: { type: 'string', description: 'Base ERC-20 token contract address (0x-hex).' },
+        sizeUsd: { type: 'number', description: 'Trade size in USD (default 1000).' }
+      },
+      required: ['address']
+    }
+  },
+  {
+    name: 'gate402_launches',
+    description:
+      'Radar of the freshest Base token launches (newest DEX pools), lightly pre-screened by liquidity/age/flow. Top-of-funnel discovery — pair with gate402_token_risk, gate402_momentum, gate402_best_swap. Pay-per-call ($0.02).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        minLiquidityUsd: { type: 'number', description: 'Minimum pool liquidity to include (default 1000).' },
+        limit: { type: 'number', description: 'Max launches to return (default 15, cap 30).' }
+      }
+    }
+  },
+  {
     name: 'gate402_token_count',
     description:
       'FREE. Estimate the token count of a string (cl100k/o200k tokenizer). Use to budget context windows. No payment required.',
@@ -345,6 +390,14 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
       return { route: '/v1/news', body: { query: args.query, limit: args.limit } };
     case 'gate402_edgar':
       return { route: '/v1/edgar', body: { ticker: args.ticker, cik: args.cik, form: args.form, limit: args.limit } };
+    case 'gate402_token_risk':
+      return { route: '/v1/token-risk', body: { address: args.address } };
+    case 'gate402_momentum':
+      return { route: '/v1/momentum', body: { address: args.address } };
+    case 'gate402_best_swap':
+      return { route: '/v1/best-swap', body: { address: args.address, sizeUsd: args.sizeUsd } };
+    case 'gate402_launches':
+      return { route: '/v1/launches', body: { minLiquidityUsd: args.minLiquidityUsd, limit: args.limit } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

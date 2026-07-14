@@ -14,6 +14,10 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 | `gate402_dex` | Live DEX price / liquidity / 24h volume for a Base token | $0.01 |
 | `gate402_news` | Recent news headlines + bull/bear sentiment for a ticker/topic | $0.02 |
 | `gate402_edgar` | Latest SEC EDGAR filings (10-K/10-Q/8-K) for a US ticker | $0.02 |
+| `gate402_token_risk` | Rug/tradeability verdict for a Base token (score + SAFE/CAUTION/AVOID; liquidity, honeypot sim, holder concentration) | $0.03 |
+| `gate402_momentum` | Momentum + order-flow signal for a Base token (RISING/FALLING + ACCUMULATION/DISTRIBUTION, honeypot-gated) | $0.02 |
+| `gate402_best_swap` | Best-execution intel: which DEX pool + estimated price impact for a trade size | $0.02 |
+| `gate402_launches` | Radar of the freshest Base token launches, lightly pre-screened | $0.02 |
 
 …plus three **free** tools that run **locally in this process** (pure compute — no payment, no key, no network):
 
@@ -60,7 +64,7 @@ Same shape — point the MCP server `command` at `npx -y gate402-mcp`.
 
 ### Agent frameworks (LangChain, CrewAI, LlamaIndex)
 
-gate402 is a standard stdio MCP server, so any framework with an MCP adapter can load all 11 tools:
+gate402 is a standard stdio MCP server, so any framework with an MCP adapter can load all 15 tools:
 
 **LangChain / LangGraph** (`langchain-mcp-adapters`):
 ```python
