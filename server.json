@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.pgalyen1987/gate402-mcp",
-  "description": "Pay-per-call agent APIs over x402 (USDC on Base): a full Base trading-agent loop (launch radar, rug/tradeability risk, momentum + order-flow, best-execution) plus on-chain/DEX/news/SEC data, web scraping, token compression, and semantic cache.",
+  "description": "x402 pay-per-call agent APIs: Base trading loop (risk/momentum/execution) + data & scraping",
   "repository": {
     "url": "https://github.com/pgalyen1987/gate402-mcp",
     "source": "github"
