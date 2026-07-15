@@ -1,0 +1,21 @@
+# Smithery configuration for gate402-mcp
+# https://smithery.ai/docs/build/project-config
+startCommand:
+  type: stdio
+  configSchema:
+    # No configuration required — a free-tier credit key is claimed automatically
+    # on first use, so the server works with zero setup. Optionally provide a key.
+    type: object
+    required: []
+    properties:
+      apiKey:
+        type: string
+        title: Gate402 API key
+        description: "Optional. A Gate402 X-API-Key (sk_live_...). Leave blank to auto-claim a free-tier key on first run."
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'gate402-mcp'],
+      env: config.apiKey ? { GATE402_API_KEY: config.apiKey } : {}
+    })
+  exampleConfig: {}
