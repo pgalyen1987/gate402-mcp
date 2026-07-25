@@ -296,12 +296,12 @@ const TOOLS: Tool[] = [
   {
     name: 'gate402_infer',
     description:
-      'Run open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mixtral) and get a completion, paid per-token via Gate402 over x402. Prepay is on prompt + max_tokens; you are billed on actual token usage with the rest credited, and get a signed usage receipt. Free tier on first runs.',
+      'Run open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mistral) and get a completion, paid per-token via Gate402 over x402. Prepay is on prompt + max_tokens; you are billed on actual token usage with the rest credited, and get a signed usage receipt. Free tier on first runs.',
     inputSchema: {
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'The user prompt / question.' },
-        model: { type: 'string', enum: ['llama-3.1-8b', 'llama-3.1-70b', 'qwen-2.5-7b', 'mixtral-8x7b'], description: 'Open model to run (default llama-3.1-8b).' },
+        model: { type: 'string', enum: ['llama-3.1-8b', 'llama-3.1-70b', 'qwen-2.5-7b', 'mistral-small'], description: 'Open model to run (default llama-3.1-8b).' },
         system: { type: 'string', description: 'Optional system instruction.' },
         max_tokens: { type: 'number', description: 'Max completion tokens (default 512, cap 2048). Prepaid; unused is credited.' }
       },
@@ -458,7 +458,7 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
 }
 
 const server = new Server(
-  { name: 'gate402-mcp', version: '0.7.0' },
+  { name: 'gate402-mcp', version: '0.7.1' },
   { capabilities: { tools: {} } }
 );
 

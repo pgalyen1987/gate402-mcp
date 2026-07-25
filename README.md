@@ -6,7 +6,7 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 
 | Tool | What it does | Price |
 |---|---|---|
-| `gate402_infer` | Open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mixtral); billed on actual tokens, signed usage receipt | per-token (from $0.05/1M in) |
+| `gate402_infer` | Open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mistral); billed on actual tokens, signed usage receipt | per-token (from $0.05/1M in) |
 | `gate402_compute` | Rent metered GPU/CPU to run a container job; signed execution receipt | per-second |
 | `gate402_scrape` | Fetch any public URL, render JS, strip nav/ads → clean LLM-ready Markdown | $0.002 |
 | `gate402_scrape_stealth` | Cloudflare/anti-bot fetch via residential proxies + CAPTCHA solving → clean Markdown | $0.05 |

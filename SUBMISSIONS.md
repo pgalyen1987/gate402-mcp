@@ -24,7 +24,7 @@ Open a PR adding this line under a fitting category (🔎 **Search & Web** / �
 keeping the repo's alphabetical + emoji-legend conventions:
 
 ```markdown
-- [pgalyen1987/gate402-mcp](https://github.com/pgalyen1987/gate402-mcp) 📇 ☁️ - Pay-per-call agent APIs over x402: GPU/CPU compute, open-model LLM inference (Llama/Qwen/Mixtral), crypto/finance data, web→Markdown scraping. Free tier, no signup.
+- [pgalyen1987/gate402-mcp](https://github.com/pgalyen1987/gate402-mcp) 📇 ☁️ - Pay-per-call agent APIs over x402: GPU/CPU compute, open-model LLM inference (Llama/Qwen/Mistral), crypto/finance data, web→Markdown scraping. Free tier, no signup.
 ```
 (Legend: 📇 = TypeScript, ☁️ = cloud service. Check the current legend before submitting — it shifts.)
 - [ ] PR opened. Also consider the secondary list `appcypher/awesome-mcp-servers`.
@@ -49,7 +49,7 @@ Frameworks load gate402 via their MCP adapters (usage in README). To get *discov
 ## 5. Cross-link with existing distribution
 - [ ] Add the MCP server to the awesome-x402 PR (#660) description / Gate402 entry — x402 buyers will want the MCP path too. Updated one-liner (lead with the new flagship):
   ```markdown
-  - **[Gate402](https://gate402.app)** — the programmable compute + data market for AI agents over x402: rent GPU/CPU compute (per-second) and open-model LLM inference (per-token, Llama/Qwen/Mixtral), plus crypto/finance data and web tools. Signed receipts, no signup. MCP: `npx -y gate402-mcp`.
+  - **[Gate402](https://gate402.app)** — the programmable compute + data market for AI agents over x402: rent GPU/CPU compute (per-second) and open-model LLM inference (per-token, Llama/Qwen/Mistral), plus crypto/finance data and web tools. Signed receipts, no signup. MCP: `npx -y gate402-mcp`.
   ```
 - [ ] Link it from gate402.app landing page (done) and from each upstream repo README (NodeProxy / TokenSqueezer / VectorCache).
 
