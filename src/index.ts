@@ -127,6 +127,21 @@ async function callRoute(route: string, body: unknown): Promise<CallResult> {
       const stats = json.stats ? ` (${JSON.stringify(json.stats)})` : '';
       return { ok: true, text: `${json.compressed}${stats}` };
     }
+    // Inference: surface the completion + a compact usage/billing line.
+    if (typeof json?.text === 'string' && json?.usage) {
+      const u = json.usage;
+      return {
+        ok: true,
+        text: `${json.text}\n\n— ${json.model} · ${u.promptTokens}+${u.completionTokens} tok · billed $${json.billedUsdc} (credit $${json.creditUsdc}) · receipt ${String(json.receipt?.sig || '').slice(0, 16)}…`
+      };
+    }
+    // Compute: surface a run summary instead of the full receipt blob.
+    if (json?.jobId) {
+      return {
+        ok: true,
+        text: `job ${json.jobId} · ${json.node} (${json.gpu}) · exit ${json.exitCode} · billed ${json.billedSec}s of ${json.requestedSec}s (credit ${json.creditSec}s) · $${json.priceUsdc}\n${(json.logsTail || []).join('\n')}`
+      };
+    }
     return { ok: true, text: JSON.stringify(json, null, 2) };
   } catch {
     return { ok: true, text: payload };
@@ -279,6 +294,37 @@ const TOOLS: Tool[] = [
     }
   },
   {
+    name: 'gate402_infer',
+    description:
+      'Run open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mixtral) and get a completion, paid per-token via Gate402 over x402. Prepay is on prompt + max_tokens; you are billed on actual token usage with the rest credited, and get a signed usage receipt. Free tier on first runs.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string', description: 'The user prompt / question.' },
+        model: { type: 'string', enum: ['llama-3.1-8b', 'llama-3.1-70b', 'qwen-2.5-7b', 'mixtral-8x7b'], description: 'Open model to run (default llama-3.1-8b).' },
+        system: { type: 'string', description: 'Optional system instruction.' },
+        max_tokens: { type: 'number', description: 'Max completion tokens (default 512, cap 2048). Prepaid; unused is credited.' }
+      },
+      required: ['prompt']
+    }
+  },
+  {
+    name: 'gate402_compute',
+    description:
+      'Rent metered GPU/CPU compute to run a container job, paid per-second via Gate402 over x402. Scheduling prefers nodes with the model already warm; returns logs + a signed, verifiable execution receipt. Free tier on first runs.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', description: 'OCI container image to run (its entrypoint is the job).' },
+        gpu: { type: 'string', enum: ['cpu', 'rtx4090', 'rtx5090', 'a100', 'h100'], description: 'GPU/CPU class to rent.' },
+        durationSec: { type: 'number', description: 'Max wall-seconds to pre-pay for; unused time is refunded as credit.' },
+        model: { type: 'string', description: 'Optional model id; scheduling prefers nodes with it already warm.' },
+        cmd: { type: 'array', items: { type: 'string' }, description: 'Optional command override.' }
+      },
+      required: ['image', 'gpu', 'durationSec']
+    }
+  },
+  {
     name: 'gate402_token_count',
     description:
       'FREE. Estimate the token count of a string (cl100k/o200k tokenizer). Use to budget context windows. No payment required.',
@@ -398,13 +444,21 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
       return { route: '/v1/best-swap', body: { address: args.address, sizeUsd: args.sizeUsd } };
     case 'gate402_launches':
       return { route: '/v1/launches', body: { minLiquidityUsd: args.minLiquidityUsd, limit: args.limit } };
+    case 'gate402_infer': {
+      const messages: Array<{ role: string; content: string }> = [];
+      if (typeof args.system === 'string' && args.system.trim()) messages.push({ role: 'system', content: args.system });
+      messages.push({ role: 'user', content: typeof args.prompt === 'string' ? args.prompt : '' });
+      return { route: '/v1/infer', body: { model: args.model || 'llama-3.1-8b', messages, max_tokens: args.max_tokens } };
+    }
+    case 'gate402_compute':
+      return { route: '/v1/compute', body: { image: args.image, gpu: args.gpu, durationSec: args.durationSec, model: args.model, cmd: args.cmd } };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
 }
 
 const server = new Server(
-  { name: 'gate402-mcp', version: '0.1.0' },
+  { name: 'gate402-mcp', version: '0.7.0' },
   { capabilities: { tools: {} } }
 );
 

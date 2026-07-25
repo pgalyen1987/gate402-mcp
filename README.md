@@ -2,10 +2,12 @@
 
 [![x402 trust](https://x402.fuchss.app/badge.svg?resource=https%3A%2F%2Fgate402.app%2Fv1%2Fproxy)](https://x402.fuchss.app/provider/gate402.app)
 
-MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client a full toolkit with **no signup and a free tier on first runs** — including a complete Base trading loop (discover → vet → read → execute):
+MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client a full toolkit with **no signup and a free tier on first runs** — GPU/CPU compute, open-model LLM inference, a complete Base trading loop (discover → vet → read → execute), and web tools:
 
 | Tool | What it does | Price |
 |---|---|---|
+| `gate402_infer` | Open-model LLM inference (Llama 3.1 8B/70B, Qwen 2.5, Mixtral); billed on actual tokens, signed usage receipt | per-token (from $0.05/1M in) |
+| `gate402_compute` | Rent metered GPU/CPU to run a container job; signed execution receipt | per-second |
 | `gate402_scrape` | Fetch any public URL, render JS, strip nav/ads → clean LLM-ready Markdown | $0.002 |
 | `gate402_scrape_stealth` | Cloudflare/anti-bot fetch via residential proxies + CAPTCHA solving → clean Markdown | $0.05 |
 | `gate402_minify` | Compress text to cut downstream LLM token spend (~40%) | $0.005 / 10k tok |
@@ -64,7 +66,7 @@ Same shape — point the MCP server `command` at `npx -y gate402-mcp`.
 
 ### Agent frameworks (LangChain, CrewAI, LlamaIndex)
 
-gate402 is a standard stdio MCP server, so any framework with an MCP adapter can load all 15 tools:
+gate402 is a standard stdio MCP server, so any framework with an MCP adapter can load all 17 tools:
 
 **LangChain / LangGraph** (`langchain-mcp-adapters`):
 ```python

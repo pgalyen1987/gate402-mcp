@@ -2,3 +2,12 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# secrets / auth — never commit
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+.mcp-smoke.mjs

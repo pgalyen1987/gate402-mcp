@@ -6,7 +6,7 @@ agents-with-users actually live (Claude Desktop, Cursor, Cline) via these channe
 ## 0. Prereqs (one-time)
 - [ ] Create public GitHub repo `pgalyen1987/gate402-mcp` and push this directory.
 - [ ] `npm publish` (package name `gate402-mcp`, MIT). Verify `npx -y gate402-mcp` runs.
-- [ ] Confirm `npx -y gate402-mcp` lists 4 tools (handshake tested locally ✓).
+- [ ] Confirm `npx -y gate402-mcp` lists 17 tools (handshake tested locally ✓).
 
 ## 1. Official MCP Registry  (registry.modelcontextprotocol.io)
 The canonical index; many clients pull from it. Publish with the official CLI:
@@ -24,7 +24,7 @@ Open a PR adding this line under a fitting category (🔎 **Search & Web** / �
 keeping the repo's alphabetical + emoji-legend conventions:
 
 ```markdown
-- [pgalyen1987/gate402-mcp](https://github.com/pgalyen1987/gate402-mcp) 📇 ☁️ - Pay-per-call agent APIs over x402: web→Markdown scraping, stealth fetch, token compression, and semantic cache. Free tier, no signup.
+- [pgalyen1987/gate402-mcp](https://github.com/pgalyen1987/gate402-mcp) 📇 ☁️ - Pay-per-call agent APIs over x402: GPU/CPU compute, open-model LLM inference (Llama/Qwen/Mixtral), crypto/finance data, web→Markdown scraping. Free tier, no signup.
 ```
 (Legend: 📇 = TypeScript, ☁️ = cloud service. Check the current legend before submitting — it shifts.)
 - [ ] PR opened. Also consider the secondary list `appcypher/awesome-mcp-servers`.
@@ -43,11 +43,14 @@ Frameworks load gate402 via their MCP adapters (usage in README). To get *discov
 - [ ] **LangChain**: submit to the awesome-langchain / community tools list; mention `langchain-mcp-adapters` usage.
 - [ ] **CrewAI**: add to the CrewAI tools/community list (MCPServerAdapter usage).
 - [ ] **LlamaIndex**: LlamaHub tool listing (McpToolSpec usage).
-- [ ] **mcp.so / Glama / Smithery**: already auto-crawled via GH topics; confirm listing shows all 11 tools.
+- [ ] **mcp.so / Glama / Smithery**: already auto-crawled via GH topics; confirm listing shows all 17 tools.
 > Value: a dev wires it once, then every agent on that framework calls the tools autonomously — no human in the loop per call.
 
 ## 5. Cross-link with existing distribution
-- [ ] Add the MCP server to the awesome-x402 PR (#660) description / Gate402 entry — x402 buyers will want the MCP path too.
+- [ ] Add the MCP server to the awesome-x402 PR (#660) description / Gate402 entry — x402 buyers will want the MCP path too. Updated one-liner (lead with the new flagship):
+  ```markdown
+  - **[Gate402](https://gate402.app)** — the programmable compute + data market for AI agents over x402: rent GPU/CPU compute (per-second) and open-model LLM inference (per-token, Llama/Qwen/Mixtral), plus crypto/finance data and web tools. Signed receipts, no signup. MCP: `npx -y gate402-mcp`.
+  ```
 - [ ] Link it from gate402.app landing page (done) and from each upstream repo README (NodeProxy / TokenSqueezer / VectorCache).
 
 > The win condition is the same as LAUNCH.md: **one real integrator doing volume.** These listings
