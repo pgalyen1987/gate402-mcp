@@ -1,6 +1,6 @@
 {
   "name": "gate402-mcp",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "mcpName": "io.github.pgalyen1987/gate402-mcp",
   "description": "MCP server for Gate402 \u2014 pay-per-call agent APIs over x402: GPU/CPU compute, open-model LLM inference, crypto/finance data, and web tools. Free tier, no signup.",
   "license": "MIT",
@@ -23,6 +23,8 @@
     "cline",
     "gpu",
     "gpu-compute",
+    "rent-gpu",
+    "gpu-marketplace",
     "llm-inference",
     "inference",
     "llama",

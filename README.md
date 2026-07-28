@@ -2,7 +2,7 @@
 
 [![x402 trust](https://x402.fuchss.app/badge.svg?resource=https%3A%2F%2Fgate402.app%2Fv1%2Fproxy)](https://x402.fuchss.app/provider/gate402.app)
 
-MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client a full toolkit with **no signup and a free tier on first runs** — GPU/CPU compute, open-model LLM inference, a complete Base trading loop (discover → vet → read → execute), and web tools:
+MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs over HTTP 402 (x402 / USDC on Base). Gives any MCP client a full toolkit with **no signup and a free tier on first runs** — GPU/CPU compute, open-model LLM inference, a GPU marketplace, a complete Base trading loop (discover → vet → read → execute), and web tools:
 
 | Tool | What it does | Price |
 |---|---|---|
@@ -28,6 +28,16 @@ MCP server for **[Gate402](https://gate402.app)** — pay-per-call agent APIs ov
 | `gate402_token_count` | Estimate the token count of a string (budget your context window) |
 | `gate402_html_to_md` | Convert an HTML string you already have into clean Markdown |
 | `gate402_json_repair` | Coerce malformed / LLM-mangled JSON into valid JSON |
+
+### GPU marketplace
+
+Gate402 also routes to **third-party GPU/compute providers** with **escrow-on-success** — the buyer is charged only if the provider delivers. Providers keep 85% of each call, paid out on-chain in USDC on Base.
+
+| Tool | What it does |
+|---|---|
+| `gate402_market_infer` | LLM inference via the marketplace, routed to the cheapest healthy provider. **x402-native** (settles on-chain per call — needs an x402 client, not the free-tier key) |
+| `gate402_providers` | **Free.** Browse active providers — model, per-call price, reliability |
+| `gate402_become_provider` | **Free.** List your own GPU and earn 85%/call — returns the exact sign-message + registration request |
 
 ## How billing works
 

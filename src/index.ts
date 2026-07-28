@@ -103,6 +103,15 @@ async function callRoute(route: string, body: unknown): Promise<CallResult> {
   const payload = await res.text();
 
   if (res.status === 402) {
+    if (route === '/v1/market/infer') {
+      return {
+        ok: false,
+        text:
+          `The Gate402 GPU marketplace is x402-native — it settles on-chain per call (escrow-on-success), so the free-tier / X-API-Key rail cannot pay it. ` +
+          `Call POST ${BASE_URL}/v1/market/infer with an x402 payment client, or browse supply with gate402_providers. ` +
+          `(The first-party gate402_infer and gate402_compute tools DO work on the free tier.)`
+      };
+    }
     return {
       ok: false,
       text:
@@ -353,6 +362,41 @@ const TOOLS: Tool[] = [
       properties: { text: { type: 'string', description: 'Broken JSON string to repair.' } },
       required: ['text']
     }
+  },
+  {
+    name: 'gate402_market_infer',
+    description:
+      'Run LLM inference through the Gate402 GPU marketplace — routed to the cheapest healthy third-party provider, with escrow-on-success (you are only charged if the provider delivers). x402-native: it settles on-chain per call, so it needs an x402 payment client — the free-tier key does NOT pay the marketplace. Browse available supply/models/prices first with gate402_providers.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        model: { type: 'string', description: 'A model offered by an active provider (see gate402_providers).' },
+        prompt: { type: 'string', description: 'The user prompt / question.' },
+        system: { type: 'string', description: 'Optional system instruction.' },
+        max_tokens: { type: 'number', description: 'Max completion tokens.' }
+      },
+      required: ['model', 'prompt']
+    }
+  },
+  {
+    name: 'gate402_providers',
+    description:
+      'FREE. Browse the Gate402 GPU marketplace: list active third-party compute/inference providers with their model, per-call price (USDC), and reliability. Use to find supply before gate402_market_infer, or to check your own listing. No payment required.',
+    inputSchema: { type: 'object', properties: {} }
+  },
+  {
+    name: 'gate402_become_provider',
+    description:
+      'FREE. Get the exact steps to LIST your own GPU/compute as a Gate402 provider and earn per call — you keep 85%, paid out on-chain in USDC on Base (escrow-on-success). Pass your { endpointUrl, payoutWallet, model, priceUsdc } and it returns the EIP-191 message to sign with that wallet plus the ready-to-send registration request. No payment required.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        endpointUrl: { type: 'string', description: 'Your OpenAI-compatible endpoint base URL, e.g. https://host/v1' },
+        payoutWallet: { type: 'string', description: 'Base wallet address to receive payouts (0x…).' },
+        model: { type: 'string', description: 'The model id you serve (e.g. llama-3.1-8b).' },
+        priceUsdc: { type: 'number', description: 'Your price per call in USDC.' }
+      }
+    }
   }
 ];
 
@@ -361,7 +405,7 @@ const TOOLS: Tool[] = [
  * no public endpoint to abuse. They make the server more useful to install; the
  * paid tools (which do call the gateway) ride along.
  */
-const FREE_TOOLS = new Set(['gate402_token_count', 'gate402_html_to_md', 'gate402_json_repair']);
+const FREE_TOOLS = new Set(['gate402_token_count', 'gate402_html_to_md', 'gate402_json_repair', 'gate402_become_provider']);
 
 const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
 
@@ -410,9 +454,65 @@ function localFreeTool(name: string, args: Record<string, unknown>): CallResult 
         return { ok: false, text: `Unrepairable JSON: ${err instanceof Error ? err.message : String(err)}` };
       }
     }
+    case 'gate402_become_provider': {
+      const endpointUrl = typeof args.endpointUrl === 'string' ? args.endpointUrl : '';
+      const payoutWallet = typeof args.payoutWallet === 'string' ? args.payoutWallet : '';
+      const model = typeof args.model === 'string' ? args.model : '';
+      const priceUsdc = typeof args.priceUsdc === 'number' ? args.priceUsdc : undefined;
+      if (!endpointUrl || !payoutWallet || !model || priceUsdc === undefined) {
+        return { ok: false, text: 'Provide { endpointUrl, payoutWallet, model, priceUsdc } to generate your provider registration.' };
+      }
+      // The gateway verifies ownership by recovering this exact EIP-191 message.
+      const ts = Date.now();
+      const message = `Gate402 provider registration\nwallet: ${payoutWallet}\nendpoint: ${endpointUrl}\nmodel: ${model}\nts: ${ts}`;
+      const body = { endpointUrl, payoutWallet, model, priceUsdc, ts, signature: '<sign the message above with this wallet>' };
+      return {
+        ok: true,
+        text: JSON.stringify({
+          how: 'You keep 85% of each call; Gate402 takes 15%. Payouts settle on-chain in USDC on Base, escrow-on-success (you are paid only when your endpoint delivers).',
+          step1_signThisMessage: message,
+          step2_postTo: `${BASE_URL}/v1/providers/register`,
+          step2_body: body,
+          note: 'Sign step1 with the payoutWallet private key (EIP-191 personal_sign / viem signMessage), put the signature in step2_body.signature, then POST step2_body. Verify your listing with gate402_providers.'
+        }, null, 2)
+      };
+    }
     default:
       return { ok: false, text: `Unknown free tool: ${name}` };
   }
+}
+
+/** FREE marketplace browse — GET /v1/providers (public, no key, no payment). */
+async function listMarketProviders(): Promise<CallResult> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}/v1/providers`, { headers: { accept: 'application/json' } });
+  } catch (err) {
+    return { ok: false, text: `Gate402 unreachable: ${err instanceof Error ? err.message : String(err)}` };
+  }
+  const payload = await res.text();
+  if (!res.ok) return { ok: false, text: `Gate402 returned HTTP ${res.status}: ${payload.slice(0, 300)}` };
+  let json: { providers?: Array<Record<string, unknown>>; feeBps?: number };
+  try {
+    json = JSON.parse(payload);
+  } catch {
+    return { ok: true, text: payload };
+  }
+  const provs = json.providers || [];
+  if (provs.length === 0) {
+    return {
+      ok: true,
+      text: 'No active providers in the Gate402 GPU marketplace yet. List yours with gate402_become_provider to be the first — you keep 85% of every call, paid on-chain in USDC.'
+    };
+  }
+  const lines = provs.map((p) => {
+    const calls = Number(p.calls || 0);
+    const failures = Number(p.failures || 0);
+    const ok = calls ? Math.round(((calls - failures) / calls) * 100) : 100;
+    const avg = p.avgMs != null ? ` · ~${p.avgMs}ms` : '';
+    return `- ${p.id}: ${p.model} · $${p.priceUsdc}/call · ${calls} calls, ${ok}% ok${avg}`;
+  });
+  return { ok: true, text: `Gate402 marketplace — ${provs.length} active provider(s):\n${lines.join('\n')}\n\nBuy with gate402_market_infer (x402-native).` };
 }
 
 function bodyForTool(name: string, args: Record<string, unknown>): { route: string; body: unknown } {
@@ -452,13 +552,19 @@ function bodyForTool(name: string, args: Record<string, unknown>): { route: stri
     }
     case 'gate402_compute':
       return { route: '/v1/compute', body: { image: args.image, gpu: args.gpu, durationSec: args.durationSec, model: args.model, cmd: args.cmd } };
+    case 'gate402_market_infer': {
+      const messages: Array<{ role: string; content: string }> = [];
+      if (typeof args.system === 'string' && args.system.trim()) messages.push({ role: 'system', content: args.system });
+      messages.push({ role: 'user', content: typeof args.prompt === 'string' ? args.prompt : '' });
+      return { route: '/v1/market/infer', body: { model: args.model, messages, max_tokens: args.max_tokens } };
+    }
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
 }
 
 const server = new Server(
-  { name: 'gate402-mcp', version: '0.7.1' },
+  { name: 'gate402-mcp', version: '0.8.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -469,10 +575,12 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   try {
     const result = FREE_TOOLS.has(name)
       ? localFreeTool(name, args as Record<string, unknown>)
-      : await (async () => {
-          const { route, body } = bodyForTool(name, args as Record<string, unknown>);
-          return callRoute(route, body);
-        })();
+      : name === 'gate402_providers'
+        ? await listMarketProviders()
+        : await (async () => {
+            const { route, body } = bodyForTool(name, args as Record<string, unknown>);
+            return callRoute(route, body);
+          })();
     return { content: [{ type: 'text', text: result.text }], isError: !result.ok };
   } catch (err) {
     return { content: [{ type: 'text', text: err instanceof Error ? err.message : String(err) }], isError: true };
