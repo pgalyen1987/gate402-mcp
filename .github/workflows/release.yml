@@ -1,0 +1,62 @@
+name: Release
+
+# Publishes to npm using OIDC trusted publishing — no NPM_TOKEN stored anywhere,
+# no 2FA prompt, and provenance is attached automatically.
+#
+# One-time setup (npmjs.com → package → Settings → Trusted Publisher):
+#   Publisher:  GitHub Actions
+#   Repository: pgalyen1987/gate402-mcp
+#   Workflow:   release.yml        <- must match this file's name exactly
+#   Environment: (leave blank)
+#
+# Release flow: bump version in package.json (and server.json), commit, then
+# `git tag v0.8.0 && git push origin v0.8.0`. Or run this workflow manually from
+# the Actions tab to publish whatever version is on the default branch.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required: mints the OIDC token npm exchanges for a short-lived publish credential
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Node 22 ships npm 10.x; OIDC trusted publishing needs >= 11.5.1.
+      - name: Upgrade npm for OIDC support
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - run: npm ci
+
+      - name: Guard — version must be unpublished and manifests in sync
+        run: |
+          name=$(node -p "require('./package.json').name")
+          ver=$(node -p "require('./package.json').version")
+          if [ "$(npm view "$name@$ver" version 2>/dev/null)" = "$ver" ]; then
+            echo "::error::$name@$ver is already on the registry (npm is append-only). Bump the version."
+            exit 1
+          fi
+          # A drifted server.json silently points the MCP registry at the wrong tarball.
+          sver=$(node -p "require('./server.json').version")
+          if [ "$sver" != "$ver" ]; then
+            echo "::error::server.json is $sver but package.json is $ver — sync them."
+            exit 1
+          fi
+          echo "publishing $name@$ver"
+
+      - run: npm run build --if-present
+
+      - run: npm publish --access public
