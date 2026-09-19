@@ -109,7 +109,7 @@ async function callRoute(route: string, body: unknown): Promise<CallResult> {
         text:
           `The Gate402 GPU marketplace is x402-native — it settles on-chain per call (escrow-on-success), so the free-tier / X-API-Key rail cannot pay it. ` +
           `Call POST ${BASE_URL}/v1/market/infer with an x402 payment client, or browse supply with gate402_providers. ` +
-          `(The first-party gate402_infer and gate402_compute tools DO work on the free tier.)`
+          `(The first-party gate402_infer tool does work on the free tier; gate402_compute has no worker connected yet.)`
       };
     }
     return {
@@ -320,7 +320,7 @@ const TOOLS: Tool[] = [
   {
     name: 'gate402_compute',
     description:
-      'Rent metered GPU/CPU compute to run a container job, paid per-second via Gate402 over x402. Scheduling prefers nodes with the model already warm; returns logs + a signed, verifiable execution receipt. Free tier on first runs.',
+      'Not available yet: the compute rail answers 503 (no worker connected) until a provider joins. When live: metered GPU/CPU compute for a container job, paid per-second via Gate402 over x402, with logs and a signed execution receipt. For models today, use gate402_infer.',
     inputSchema: {
       type: 'object',
       properties: {
